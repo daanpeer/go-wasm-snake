@@ -96,13 +96,44 @@ func clear(ctx *js.Value, width float64, height float64) {
 	ctx.Call("clearRect", 0, 0, width, height)
 }
 
-func random(min int, max int) int {
-	rand.Seed(time.Now().Unix())
-	return rand.Intn(max-min) + min
-}
-
 func collide(a Vector, b Vector) bool {
 	return a.x == b.x && a.y == b.y
+}
+
+type Game struct {
+	Snake  *Snake
+	Food   *Food
+	Width  float64
+	Height float64
+}
+
+func NewGame(height float64, width float64) *Game {
+	snake := NewSnake()
+	game := &Game{Snake: snake, Width: width, Height: height}
+	game.SpawnFood()
+	return game
+}
+
+func (g *Game) SpawnFood() {
+	x := randNumber(int(g.Width)/10) * 10
+	y := randNumber(int(g.Height)/10) * 10
+	g.Food = &Food{position: Vector{x: x, y: y}}
+	fmt.Println("SpawnFood: ", g.Food)
+}
+
+func (g *Game) Loop() {
+	g.Snake.Move()
+	// check if hitting walls
+
+	if collide(g.Food.position, g.Snake.Head()) {
+		g.Snake.Eat()
+		g.SpawnFood()
+	}
+}
+
+func randNumber(max int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max)
 }
 
 func main() {
@@ -116,38 +147,22 @@ func main() {
 	done := make(chan struct{}, 0)
 
 	ctxPtr := &ctx
-
-	snake := NewSnake()
-	food := &Food{position: Vector{x: 20, y: 90}}
+	g := NewGame(height, width)
 
 	doc.Call("addEventListener", "keyup", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		key := args[0].Get("key").String()
 		switch k := key; k {
 		case "w":
-			snake.Direction(Up)
+			g.Snake.Direction(Up)
 		case "a":
-			snake.Direction(Left)
+			g.Snake.Direction(Left)
 		case "s":
-			snake.Direction(Down)
+			g.Snake.Direction(Down)
 		case "d":
-			snake.Direction(Right)
-		}
-
-		if key == "l" {
-			fmt.Println("loop")
-			clear(ctxPtr, width, height)
-			drawSnake(snake, ctxPtr)
-			drawFood(food, ctxPtr)
-			if collide(food.position, snake.Head()) {
-				snake.Eat()
-
-			}
-			snake.Move()
+			g.Snake.Direction(Right)
 		}
 		return nil
 	}))
-
-	fmt.Println(ctx, snake)
 
 	var renderFrame js.Func
 
@@ -155,18 +170,13 @@ func main() {
 	renderFrame = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		loop++
 
-		if loop == 20 {
+		if loop == 5 {
 			loop = 0
 			fmt.Println("loop")
 			clear(ctxPtr, width, height)
-			snake.Move()
-			drawSnake(snake, ctxPtr)
-			drawFood(food, ctxPtr)
-
-			fmt.Println(food.position, snake.Head(), collide(food.position, snake.Head()))
-			if collide(food.position, snake.Head()) {
-				snake.Eat()
-			}
+			g.Loop()
+			drawSnake(g.Snake, ctxPtr)
+			drawFood(g.Food, ctxPtr)
 		}
 
 		js.Global().Call("requestAnimationFrame", renderFrame)
@@ -175,8 +185,6 @@ func main() {
 	defer renderFrame.Release()
 
 	js.Global().Call("requestAnimationFrame", renderFrame)
-
-	fmt.Println("Hello, WebAssembly!")
 
 	<-done
 }
