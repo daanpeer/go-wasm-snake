@@ -32,17 +32,17 @@ func (g *Game) Loop() {
 	}
 
 	// check if hitting walls
-	head := g.Snake.head
+	head := g.Snake.Head
 	if head.x < 0 || head.y < 0 || head.x > int(g.Width) || head.y > int(g.Height) {
 		g.Snake.Dead()
 	}
 
-	dx := head.x - g.Food.position.x
-	dy := head.y - g.Food.position.y
+	dx := head.x - g.Food.Position.x
+	dy := head.y - g.Food.Position.y
 
 	distance := math.Sqrt(float64(dx*dx + dy*dy))
 
-	if distance < float64(g.Snake.size/2+g.Food.size/2) {
+	if distance < float64(g.Snake.Size/2+g.Food.Size/2) {
 		g.Snake.Eat()
 		g.SpawnFood()
 	}

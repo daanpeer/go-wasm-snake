@@ -5,22 +5,6 @@ import (
 	"syscall/js"
 )
 
-type Vector struct {
-	x int
-	y int
-}
-
-type Part struct {
-	position Vector
-}
-
-const (
-	Up    = "Up"
-	Down  = "Down"
-	Left  = "Left"
-	Right = "Right"
-)
-
 // dead screen
 // follow cursor
 // fix hit yourself
@@ -45,13 +29,13 @@ func main() {
 		key := args[0].Get("key").String()
 		switch k := key; k {
 		case "w":
-			g.Snake.Direction(Up)
+			g.Snake.SetDirection(Up)
 		case "a":
-			g.Snake.Direction(Left)
+			g.Snake.SetDirection(Left)
 		case "s":
-			g.Snake.Direction(Down)
+			g.Snake.SetDirection(Down)
 		case "d":
-			g.Snake.Direction(Right)
+			g.Snake.SetDirection(Right)
 		case "p":
 			g.Snake.Eat()
 		}
@@ -66,7 +50,7 @@ func main() {
 		g.Loop()
 		d.DrawGame()
 
-		l := len(g.Snake.parts)
+		l := len(g.Snake.Parts)
 		if l != prevLength {
 			points.Set("innerHTML", strconv.Itoa(l))
 			prevLength = l
