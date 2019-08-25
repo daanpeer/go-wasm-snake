@@ -11,8 +11,31 @@
         go.run(result.instance);
       });
     </script>
+    <style type="text/css">
+      body {
+        margin: 0;
+        margin: 20px;
+      }
+
+      #points {
+        position: absolute;
+        color: white;
+        font-size: 20px;
+        padding: 5px;
+        font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+          "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+      }
+
+      #canvas {
+        width: 100%;
+        background-color: black;
+        height: 100%;
+        box-sizing: border-box;
+      }
+    </style>
   </head>
   <body>
+    <div id="points">0</div>
     <canvas id="canvas"></canvas>
   </body>
 </html>
